@@ -6,7 +6,7 @@ from sqlalchemy.orm import Session
 
 from app.deps import get_db
 from app.models import Parcel, Customer
-from app.schemas import ParcelOut, ParcelCreate, TimelineOut
+from app.schemas import ParcelOut, ParcelCreate, TimelineOut, TimelineEvent
 from app.services.parcels import find_parcel_by_code, create_parcel
 from app.routers.customers import parse_sort, apply_sort
 

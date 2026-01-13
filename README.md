@@ -568,10 +568,12 @@ pytest --cov=app --cov-report=term-missing
 
 ## 15. Seed data (Populate DB with some records)
 
-### Run
-# from project root
+### Run - from project root
+
+```shell
 python -m scripts.seed_data           # populate once
 python -m scripts.seed_data --reset   # wipe tables then repopulate
+```
 
 ### What it creates
 - 3 customers
