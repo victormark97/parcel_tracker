@@ -1,9 +1,12 @@
 from typing import List
 
 from fastapi import APIRouter, Depends, HTTPException, Query
+from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.deps import get_db
+from app.models import Scan
+from app.routers.customers import parse_sort, apply_sort
 from app.schemas import ScanOut, ScanCreate
 from app.services.parcels import find_parcel_by_code, apply_scan_transition
 
@@ -37,19 +40,16 @@ def list_scans(
     db: Session = Depends(get_db),
     page: int = Query(1, ge=1),
     size: int = Query(50, ge=1, le=200),
-    sort: str = "ts,asc",
+    sort: str = "ts;asc",
 ):
     parcel = find_parcel_by_code(db, tracking_code)
     if not parcel:
         raise HTTPException(404, "parcel not found")
 
-    scans = list(parcel.scans)
-    # sort simple
-    reverse = False
-    if sort.endswith(",desc"):
-        reverse = True
-    scans.sort(key=lambda s: s.ts, reverse=reverse)
+    stmt = select(Scan).where(Scan.parcel_id == parcel.id)
 
-    start = (page - 1) * size
-    end = start + size
-    return scans[start:end]
+    field, order = parse_sort(sort, {"ts", "location", "type", "id"}, default="ts")
+    stmt = apply_sort(stmt, Scan, field, order)
+
+    stmt = stmt.offset((page - 1) * size).limit(size)
+    return db.execute(stmt).scalars().all()

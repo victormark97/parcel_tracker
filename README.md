@@ -10,7 +10,7 @@ Un API simplu pentru urmarirea coletelor. Fara frontend. Persistenta in SQLite.
 * Scan timeline pentru fiecare colet
 * Validari de status
 * Filtrari, sortare, paginare
-* Documentatie auto in `/docs` (FastAPI)
+* Documentatie auto in `/docs` (FastAPI + Pydantic)
 * Rulare locala pe `localhost:8000`
 
 ## 3. Stack tehnic
