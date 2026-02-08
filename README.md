@@ -499,6 +499,18 @@ Eroare 400 (interval invalid):
            4. Actualizați câmpurile specificate în payload pe obiectul parcel. Folosiți `payload.dict(exclude_unset=True)` pentru a itera doar peste câmpurile trimise efectiv în request.
            5. Salvați modificările (`db.commit()`) și returnați coletul actualizat.
 
+#### 3. Dockerizarea aplicației API
+
+   * **Descriere**: Creați un fișier `Dockerfile` pentru a containeriza aplicația FastAPI. Scopul este ca aplicația să poată fi construită și rulată izolat, fără a depinde de mediul local de Python sau de sistemul de operare.
+   * **Indicii**:
+       * **Fișier**: `Dockerfile` (în rădăcina proiectului).
+       * **Logic**:
+           1.  Folosiți o imagine de bază oficială Python (ex: `python:3.10-slim`).
+           2.  Setați directorul de lucru (`WORKDIR /app`).
+           3.  Copiați `requirements.txt` și instalați dependențele (`RUN pip install --no-cache-dir -r requirements.txt`).
+           4.  Copiați restul codului sursă în container.
+           5.  Expuneți portul 8000 și definiți comanda de start (`CMD`) pentru a lansa serverul uvicorn (ex: `uvicorn app.main:app --host 0.0.0.0 --port 8000`).
+
   ---
 
 ### Dificil
@@ -526,6 +538,19 @@ Eroare 400 (interval invalid):
            2. Folosind `pytest`, scrieți funcții de test pentru fiecare tranziție validă (ex: `test_transition_new_to_pickup`).
            3. În fiecare test, creați un obiect `Parcel` cu o stare inițială, apelați `apply_scan_transition` și verificați (`assert`) că starea finală este cea corectă.
            4. Scrieți teste și pentru tranzițiile ilegale (ex: `new` -> `in_transit`) și verificați că se aruncă excepția corectă folosind `pytest.raises(ValueError)`.
+
+#### 3. Infrastructură completă cu Docker Compose și PostgreSQL
+
+   * **Descriere**: Migrați baza de date de la SQLite la PostgreSQL și orchestrați întreaga aplicație folosind `docker-compose`. Baza de date trebuie să ruleze într-un container separat, iar datele trebuie să fie persistente folosind volume, chiar dacă containerele sunt oprite/șterse.
+   * **Indicii**:
+       * **Fișiere**: `docker-compose.yml`, `app/database.py`, `requirements.txt`.
+       * **Logic**:
+           1.  **Dependențe**: Adăugați driverul de PostgreSQL (ex: `psycopg2-binary`) în `requirements.txt`.
+           2.  **Configurare DB**: Modificați `app/database.py` pentru a citi URL-ul bazei de date dintr-o variabilă de mediu (`DATABASE_URL`). Codul trebuie să suporte string-ul de conexiune Postgres: `postgresql://user:password@db_service_name:5432/db_name`.
+           3.  **Docker Compose**: Creați `docker-compose.yml` cu două servicii:
+               * `db`: Folosiți imaginea `postgres:15`, setați variabilele de mediu obligatorii (`POSTGRES_USER`, `POSTGRES_PASSWORD`, `POSTGRES_DB`) și montați un volum local pentru calea `/var/lib/postgresql/data` (pentru persistență).
+               * `app`: Folosiți `build: .` (bazat pe Dockerfile-ul de la task-ul anterior). Definiți variabila de mediu `DATABASE_URL` astfel încât să puncteze către serviciul `db` (hostname-ul este numele serviciului din compose). Mapați porturile (8000:8000).
+           4.  **Orchestrare**: Folosiți `depends_on` pentru a vă asigura că containerul `app` pornește după `db`.
 
 ## 12. Criterii de evaluare
 
@@ -578,4 +603,5 @@ python -m scripts.seed_data --reset   # wipe tables then repopulate
 ### What it creates
 - 3 customers
 - 5 parcels (mix of new, in_transit, out_for_delivery, delivered, return)
+
 - scans timeline pentru fiecare colet unde are sens
