@@ -1,0 +1,29 @@
+
+services:
+  # Serviciul 1: Baza de date
+  db:
+    image: postgres:15
+    container_name: parcel_db_container
+    environment:
+      POSTGRES_USER: parcel_user
+      POSTGRES_PASSWORD: parcel_password
+      POSTGRES_DB: parcel_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  # Serviciul 2: API-ul nostru
+  api:
+    build: .  # Construiește imaginea din Dockerfile-ul curent
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db  # Așteaptă să pornească DB-ul
+    environment:
+      # Folosim numele serviciului 'db' în loc de 'localhost'
+      DATABASE_URL: postgresql://parcel_user:parcel_password@db:5432/parcel_db
+
+# Definim volumul pentru persistență
+volumes:
+  postgres_data:

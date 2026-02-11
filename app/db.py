@@ -1,11 +1,11 @@
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, declarative_base
 
-SQLALCHEMY_DATABASE_URL = "sqlite:///./parcel.db"
+SQLALCHEMY_DATABASE_URL = "postgresql://parcel_user:parcel_password@db:5432/parcel_db"
 
 engine = create_engine(
     SQLALCHEMY_DATABASE_URL,
-    connect_args={"check_same_thread": False},  # needed for SQLite + threads
+    # connect_args={"check_same_thread": False},  # needed for SQLite + threads
 )
 SessionLocal = sessionmaker(bind=engine, autocommit=False, autoflush=False)
 Base = declarative_base()
